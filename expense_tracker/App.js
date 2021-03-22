@@ -7,32 +7,20 @@
  */
 
 import React from 'react';
-import { Text, View, TouchableHighlight, Image, StyleSheet } from 'react-native'
+import DashboardScreen from 'expense_tracker/src/screen/Dashboard';
 import { createDrawerNavigator } from 'react-navigation-drawer';
 import {
   createAppContainer,
-  // createSwitchNavigator,
-  // StackActions,
-  // NavigationActions
 } from 'react-navigation';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const TestScreen = () => {
-  return(
-    <View>
-      <Text>
-        Test Drawer Navigation
-      </Text>
-    </View>
-  )
-}
 
 const DrawerNavigator = createDrawerNavigator({
   Dashboard: {
-    screen: TestScreen,
+    screen: DashboardScreen,
     navigationOptions: {
       drawerLabel: 'Dashboard',
-      drawerIcon: ({ tintColor }) => <FontAwesome name={"dashboard"} size={22} />,
+      drawerIcon: ({ tintColor }) => <MaterialCommunityIcons name={"view-dashboard"} size={22} />,
     }
   },
 });
