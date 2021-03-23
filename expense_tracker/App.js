@@ -17,6 +17,10 @@ import {
 } from 'react-navigation';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import { Provider } from 'react-redux';
+import { store, persistor} from 'expense_tracker/src/store/configureStore';
+import { PersistGate } from 'redux-persist/integration/react'
+
 
 const DrawerNavigator = createDrawerNavigator({
   Dashboard: {
@@ -43,5 +47,13 @@ const DrawerNavigator = createDrawerNavigator({
 });
 
 const App = createAppContainer(DrawerNavigator);
-export default App;
+
+const AppWithRedux = () => (
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <App/>
+    </PersistGate>
+  </Provider>
+)
+export default AppWithRedux;
 
