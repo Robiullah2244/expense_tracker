@@ -75,7 +75,6 @@ class Category extends Component {
                                 style={[Styles.DefaultTextInput, {width: 160, height: 36}]}
                                 placeholder="Category"
                                 onChangeText={text => this.setState({category: text})}
-                                keyboardType="numeric"
                             />
                             <Button
                                 onPress={() => this.addCategory()}
