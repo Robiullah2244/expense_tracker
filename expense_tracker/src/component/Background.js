@@ -9,11 +9,11 @@ import{
 
 export default Background = (props) => {
     return(
-        <SafeAreaView style={{margin: 8,}}>
-            <ScrollView>
+        <ScrollView>
+            <SafeAreaView style={{margin: 12,}}>
                 {props.children}
-            </ScrollView>
-        </SafeAreaView>
+            </SafeAreaView>
+        </ScrollView>
     )
     
 }
