@@ -6,14 +6,40 @@ import Background from 'expense_tracker/src/component/Background';
 import {PrimaryBlue, Gray, Green} from 'expense_tracker/src/style/Colors';
 import Styles from 'expense_tracker/src/style/Styles';
 
-export default class Category extends Component {
+import { connect } from 'react-redux';
+import { expensesTypeCreateRequest } from '../store/expenses';
+class Category extends Component {
     constructor(props)
     {
         super(props);
         this.state = {
-            modalVisible: false,
             category: '',
         }
+    }
+
+    addCategory = () => {
+        if(this.state.category != '')
+            this.props.expensesTypeCreateRequest(this.state.category)
+    }
+
+    ListHeader = () => {
+        return(
+            <View style={{marginTop: 8, marginHorizontal: 12,}}>
+                <View
+                    style={{
+                    borderBottomColor: Gray,
+                    borderBottomWidth: 1.5,
+                    }}
+                />
+
+                <View style={{marginTop: 8}}>
+                    <View style={{flexDirection: "row", justifyContent: "space-between",}}>
+                        <Text style={{fontWeight: "bold", fontSize: 16}}>#</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 16}}>Category Title</Text>
+                    </View>
+                </View>
+            </View>
+        );
     }
 
     renderItem = (item, index) => {
@@ -30,7 +56,7 @@ export default class Category extends Component {
                 <View style={{marginTop: 8}}>
                     <View style={{flexDirection: "row", justifyContent: "space-between",}}>
                         <Text style={{fontWeight: "bold", fontSize: 16}}>{index+1}</Text>
-                        <Text style={{fontWeight: "bold", fontSize: 16}}>{item.id}</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 16}}>{item.title}</Text>
                     </View>
                 </View>
             </View>
@@ -52,7 +78,7 @@ export default class Category extends Component {
                                 keyboardType="numeric"
                             />
                             <Button
-                                onPress={() => {this.setState({modalVisible: !this.state.modalVisible})}}
+                                onPress={() => this.addCategory()}
                                 title='Add New Category'
                                 buttonStyle={{backgroundColor: PrimaryBlue, width: 136, height: 36, borderRadius: 8}}
                                 titleStyle={{color: 'white', fontSize: 14, fontWeight: 'bold',}}
@@ -64,8 +90,9 @@ export default class Category extends Component {
                     <View style={styles.flatListContainer}>
                         <ScrollView>
                             <FlatList
-                                data={[{'id': 1}, {'id': 2}]}
+                                data={this.props.categories}
                                 // data={this.state.filteredInvoices}
+                                ListHeaderComponent={() => this.ListHeader()}
                                 renderItem={({item, index}) => this.renderItem(item, index)}
                                 keyExtractor={item => item.id.toString()}
                                 ItemSeparatorComponent={() => (
@@ -84,6 +111,15 @@ export default class Category extends Component {
         )
     }
 }
+
+const mapStateToProps =  state => {console.log(state);return({
+    categories: state.entities.expenses.categories,
+})}
+const mapDispatchToProps =  dispatch => ({
+    expensesTypeCreateRequest: (params) => dispatch(expensesTypeCreateRequest(params)),
+    
+});
+export default connect(mapStateToProps, mapDispatchToProps)(Category)
 
 
 const styles = StyleSheet.create({
