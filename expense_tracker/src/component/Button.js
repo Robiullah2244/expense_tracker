@@ -41,7 +41,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         backgroundColor: Blue,
         padding: 8,
-        marginTop: 16,
         elevation:10
       },
 })
