@@ -90,7 +90,7 @@ class Category extends Component {
                     <View style={styles.flatListContainer}>
                         <ScrollView>
                             <FlatList
-                                data={this.props.categories}
+                                data={this.props.categoryList}
                                 // data={this.state.filteredInvoices}
                                 ListHeaderComponent={() => this.ListHeader()}
                                 renderItem={({item, index}) => this.renderItem(item, index)}
@@ -113,7 +113,7 @@ class Category extends Component {
 }
 
 const mapStateToProps =  state => {console.log(state);return({
-    categories: state.entities.expenses.categories,
+    categoryList: state.entities.expenses.categoryList,
 })}
 const mapDispatchToProps =  dispatch => ({
     expensesTypeCreateRequest: (params) => dispatch(expensesTypeCreateRequest(params)),

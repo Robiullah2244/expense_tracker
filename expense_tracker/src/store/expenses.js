@@ -6,16 +6,16 @@ import { createSelector } from "reselect";
 const slice = createSlice({
   name: "expenses",
   initialState: {
-    categories: [],
-    categories_last_id: 0,
+    categoryList: [],
+    expenses: [],
+    categoryListLastId: 0,
   },
   reducers: {
     createExpensesType: (expenses, action) => {
       console.log('action: ', action);
-      expenses.categories = [...expenses.categories, {title: action.payload.category_title, id: expenses.categories_last_id+1}]
-      expenses.categories_last_id = expenses.categories_last_id + 1;
+      expenses.categoryList = [...expenses.categoryList, {title: action.payload.category_title, id: expenses.categoryListLastId+1}]
+      expenses.categoryListLastId = expenses.categoryListLastId + 1;
     },
-
   },
   // extraReducers
 });
@@ -27,7 +27,7 @@ export default slice.reducer;
 
 
 export const expensesTypeCreateRequest= (category_title) => (dispatch, getState) => {
-  let isFound = getState().entities.expenses.categories.find((item) => {
+  let isFound = getState().entities.expenses.categoryList.find((item) => {
       return item.title == category_title;
   });
 
