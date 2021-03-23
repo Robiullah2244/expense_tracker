@@ -8,6 +8,7 @@ const slice = createSlice({
   initialState: {
     categoryList: [],
     expenseList: [],
+    filteredExpenseList: [],
     categoryListLastId: 0,
     expenseListLastId: 0,
   },
@@ -19,18 +20,43 @@ const slice = createSlice({
     },
 
     addExpense: (expenses, action) => {
-      console.log('action: ', action);
+      console.log('action: ', action, expenses);
       expenses.expenseList = [
         ...expenses.expenseList,
         {
           id: expenses.expenseListLastId+1,
           date: action.payload.date,
-          category_id: action.payload.category_id,
+          categoryId: action.payload.categoryId,
           description: action.payload.description,
           amount: action.payload.amount,
         }
       ];
       expenses.expenseListLastId = expenses.expenseListLastId + 1;
+    },
+
+    filterExpense: (expenses, action) => {
+      // console.log('action: ', action, expenses.expenseList);
+
+      let filteredList = expenses.expenseList;
+      if(!(action.payload.categoryId == '' || action.payload.categoryId == null))
+      {
+        filteredList = filteredList.filter((element) => {
+          return element.categoryId == action.payload.categoryId && (action.payload.dateRange != '' || action.payload.dateRange != null);
+        })
+      }
+      if(!(action.payload.dateRange == '' || action.payload.dateRange == null))
+      {
+        filteredList = filteredList.filter((element) => {
+          console.log(element.date,action.payload.dateRange.startDate, action.payload.dateRange.endDate);
+          return element.date >= action.payload.dateRange.startDate && element.date <= action.payload.dateRange.endDate;
+        })
+      }
+      expenses.filteredExpenseList = filteredList;
+      // console.log(expenses.filteredExpenseList);
+    },
+
+    clearFilteredExpenseList: (expenses, action) => {
+      expenses.filteredExpenseList = expenses.expenseList;
     },
   },
   // extraReducers
@@ -39,6 +65,8 @@ const slice = createSlice({
 export const {
   createExpensesType,
   addExpense,
+  filterExpense,
+  clearFilteredExpenseList
 } = slice.actions;
 export default slice.reducer;
 
@@ -73,5 +101,18 @@ export const expenseAddRequest = (expense) => (dispatch, getState) => {
   console.log('Expense object: ', expense);
   dispatch(
       addExpense(expense)
+  );
+}
+
+export const expenseFilterRequest = (filterObject) => (dispatch, getState) => {
+  console.log('filterObject: ', filterObject);
+  dispatch(
+      filterExpense(filterObject)
+  );
+}
+
+export const filteredExpenseListClearRequest = () => (dispatch, getState) => {
+  dispatch(
+      clearFilteredExpenseList()
   );
 }

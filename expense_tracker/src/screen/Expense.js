@@ -9,34 +9,46 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import DatePicker from 'react-native-date-ranges';
 
 import { connect } from 'react-redux';
-import { expenseAddRequest } from '../store/expenses';
+import { expenseAddRequest, expenseFilterRequest, filteredExpenseListClearRequest } from '../store/expenses';
 class Expense extends Component {
     constructor(props)
     {
         super(props);
         this.state = {
             modalVisible: false,
-            dateRange: null,
+            filterDateRange: null,
             description: '',
             amount: 0,
-            category_id: ''
+            categoryId: '',
+            filterCategoryId: ''
         }
+    }
+
+    componentDidMount = () => {
+        this.props.filteredExpenseListClearRequest();
     }
 
     addExpense = () => {
         let description = this.state.description;
         let amount = this.state.amount;
-        let category_id = this.state.category_id;
+        let categoryId = this.state.categoryId;
         console.log({description, amount});
-        if(description != '' && amount != 0 && category_id != '')
+        if(description != '' && amount != 0 && categoryId != '')
         {
-            this.props.expenseAddRequest({description, amount, category_id})
+            this.props.expenseAddRequest({description, amount, categoryId})
             this.setState({description:'', amount: 0, modalVisible: false});
         }
     }
 
-    clearDateRange = () => {
-        this.setState({dateRange: null});
+    filter = () => {
+        this.props.expenseFilterRequest({
+            categoryId: this.state.filterCategoryId,
+            dateRange: this.state.filterDateRange,
+        })
+    }
+
+    clearFilterDateRange = () => {
+        this.setState({filterDateRange: null});
         this.picker.setState({
             startDate: null,
             endDate: null,
@@ -49,7 +61,6 @@ class Expense extends Component {
     showDescription = (description) => {
         Alert.alert(description);
     }
-
     ListHeader = () => {
         return(
             <View style={{marginTop: 8, marginHorizontal: 12,}}>
@@ -88,7 +99,7 @@ class Expense extends Component {
                     <View style={{flexDirection: "row", flex: 1}}>
                         <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.1}}>{index+1}</Text>
                         <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.3, alignContent: 'center'}}>{item.date}</Text>
-                        <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.2}}>{item.category_id}</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.2}}>{item.categoryId}</Text>
                         <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.25, textDecorationLine: 'underline', color: Blue}} onPress={() => this.showDescription(item.description)}>Click Here</Text>
                         <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.15,}}>{item.amount}</Text>
                     </View>
@@ -110,11 +121,15 @@ class Expense extends Component {
                         titleStyle={{color: 'white', fontSize: 14, fontWeight: 'bold',}}
                     />
                     <View style={{marginTop: 12}}>
-                        <View style={{flex: 1, flexDirection:'row'}}>
+                        <View style={{flexDirection:'row'}}>
                             <View style={{flex: 1, paddingVertical: 4, borderColor: 'rgba(0,0,0,0.2)', borderWidth: 1, borderRadius: 8,alignSelf:"center"}}>
-                                <Picker style={{ height: 24}}>
-                                    <Picker.Item label="Food" value="Food" />
-                                    <Picker.Item label="Shopping" value="Shopping" />
+                                <Picker style={{ height: 24}} onValueChange={filterCategoryId => {this.setState({filterCategoryId: filterCategoryId})}}>
+                                    <Picker.Item label="Select Category" value='' />
+                                    {
+                                        this.props.categoryList.map(element => {
+                                            return (<Picker.Item label={element.title} value={element.id} />)
+                                        })
+                                    }
                                 </Picker>
                             </View>
                         </View>
@@ -160,11 +175,11 @@ class Expense extends Component {
                                     placeholder={'Ex: Apr 27, 2018 → Jul 10, 2018'}
                                     mode={'range'}
                                     onConfirm={text => {
-                                        this.setState({dateRange: text});
-                                        console.log('dateRange: ', text);
+                                        this.setState({filterDateRange: text});
+                                        console.log('filterDateRange: ', text);
                                     }}
                                     ref={ref => (this.picker = ref)}
-                                    // value={this.state.dateRange}
+                                    // value={this.state.filterDateRange}
                                     // selectedValue={'dscssdcsdfdjsbd'}
                                 />
                             </View>
@@ -174,12 +189,12 @@ class Expense extends Component {
                                 size={20}
                                 name={'md-close'}
                                 color={'red'}
-                                onPress={() => this.clearDateRange()}
+                                onPress={() => this.clearFilterDateRange()}
                             />
                         </View>
 
                         <Button
-                            onPress={() => this.fiter()}
+                            onPress={() => this.filter()}
                             title='Filter'
                             buttonStyle={{backgroundColor: PrimaryBlue, width: 96, height: 36, borderRadius: 8, marginTop: 8}}
                             titleStyle={{color: 'white', fontSize: 14, fontWeight: 'bold',}}
@@ -188,7 +203,7 @@ class Expense extends Component {
                         <View style={styles.flatListContainer}>
                             <ScrollView>
                                 <FlatList
-                                    data={this.props.expenseList}
+                                    data={this.props.filteredExpenseList}
                                     // data={this.state.filteredInvoices}
                                     ListHeaderComponent={() => this.ListHeader()}
                                     renderItem={({item, index}) => this.renderItem(item, index)}
@@ -231,11 +246,10 @@ class Expense extends Component {
                                 </View>
                                 <View style={{flexDirection:'row'}}>
                                     <View style={{flex: 1, paddingVertical: 4, borderColor: 'rgba(0,0,0,0.2)', borderWidth: 1, borderRadius: 8,alignSelf:"center"}}>
-                                        <Picker style={{ height: 24}} onValueChange={category_id => {this.setState({category_id: category_id})}}>
+                                        <Picker style={{ height: 24}} onValueChange={categoryId => {this.setState({categoryId: categoryId})}}>
                                             <Picker.Item label="Select Category" value='' />
                                             {
                                                 this.props.categoryList.map(element => {
-                                                    console.log(element);
                                                     return (<Picker.Item label={element.title} value={element.id} />)
                                                 })
                                             }
@@ -271,12 +285,13 @@ class Expense extends Component {
 
 
 const mapStateToProps =  state => {console.log(state);return({
-    expenseList: state.entities.expenses.expenseList,
+    filteredExpenseList: state.entities.expenses.filteredExpenseList,
     categoryList: state.entities.expenses.categoryList,
 })}
 const mapDispatchToProps =  dispatch => ({
     expenseAddRequest: (params) => dispatch(expenseAddRequest(params)),
-    
+    expenseFilterRequest: (params) => dispatch(expenseFilterRequest(params)),
+    filteredExpenseListClearRequest: (params) => dispatch(filteredExpenseListClearRequest(params)),
 });
 export default connect(mapStateToProps, mapDispatchToProps)(Expense)
 
