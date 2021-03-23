@@ -1,40 +1,56 @@
 import React, { Component } from 'react'
-import { Text, View, Picker, Modal, KeyboardAvoidingView, TextInput, FlatList, StyleSheet, ScrollView } from 'react-native'
+import { Text, View, Picker, Modal, KeyboardAvoidingView, TextInput, FlatList, StyleSheet, ScrollView, Alert } from 'react-native'
 import Header from 'expense_tracker/src/component/Header';
-import {PrimaryBlue, Gray, GrayWithOpacity, Red} from 'expense_tracker/src/style/Colors';
+import {PrimaryBlue, Gray, GrayWithOpacity, Red, Blue} from 'expense_tracker/src/style/Colors';
 import Styles from 'expense_tracker/src/style/Styles';
 import Background from 'expense_tracker/src/component/Background';
 import Button from 'expense_tracker/src/component/Button';
 import Icon from 'react-native-vector-icons/Ionicons';
 import DatePicker from 'react-native-date-ranges';
 
-export default class Expense extends Component {
+import { connect } from 'react-redux';
+import { expenseAddRequest } from '../store/expenses';
+class Expense extends Component {
     constructor(props)
     {
         super(props);
         this.state = {
             modalVisible: false,
-            invoiceDate: null,
+            dateRange: null,
+            description: '',
+            amount: 0,
+            category_id: ''
         }
     }
 
     addExpense = () => {
-
+        let description = this.state.description;
+        let amount = this.state.amount;
+        let category_id = this.state.category_id;
+        console.log({description, amount});
+        if(description != '' && amount != 0 && category_id != '')
+        {
+            this.props.expenseAddRequest({description, amount, category_id})
+            this.setState({description:'', amount: 0, modalVisible: false});
+        }
     }
 
     clearDateRange = () => {
-        this.setState({invoiceDate: null});
+        this.setState({dateRange: null});
         this.picker.setState({
-        startDate: null,
-        endDate: null,
-        clearStart: '',
-        clearEnd: '',
-        showContent: false,
+            startDate: null,
+            endDate: null,
+            clearStart: '',
+            clearEnd: '',
+            showContent: false,
         });
     };
 
-    renderItem = (item, index) => {
-        console.log(item);
+    showDescription = (description) => {
+        Alert.alert(description);
+    }
+
+    ListHeader = () => {
         return(
             <View style={{marginTop: 8, marginHorizontal: 12,}}>
                 <View
@@ -46,10 +62,35 @@ export default class Expense extends Component {
 
                 <View style={{marginTop: 8}}>
                     <View style={{flexDirection: "row", justifyContent: "space-between",}}>
-                        <Text style={{fontWeight: "bold", fontSize: 16}}>{index+1}</Text>
-                        <Text style={{fontWeight: "bold", fontSize: 16}}>{item.datetime}</Text>
-                        <Text style={{fontWeight: "bold", fontSize: 16}}>{item.category}</Text>
-                        <Text style={{fontWeight: "bold", fontSize: 16}}>{item.description}</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 14, flex: 0.1}}>#</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 14, flex: 0.3}}>Date</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 14, flex: 0.2}}>Category</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 14, flex: 0.25}}>Description</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 14, flex: 0.15}}>Amount</Text>
+
+                    </View>
+                </View>
+            </View>
+        );
+    }
+
+    renderItem = (item, index) => {
+        return(
+            <View style={{marginTop: 8, marginHorizontal: 12,}}>
+                <View
+                    style={{
+                    borderBottomColor: Gray,
+                    borderBottomWidth: 1.5,
+                    }}
+                />
+
+                <View style={{marginTop: 8}}>
+                    <View style={{flexDirection: "row", flex: 1}}>
+                        <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.1}}>{index+1}</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.3, alignContent: 'center'}}>{item.date}</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.2}}>{item.category_id}</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.25, textDecorationLine: 'underline', color: Blue}} onPress={() => this.showDescription(item.description)}>Click Here</Text>
+                        <Text style={{fontWeight: "bold", fontSize: 13, flex: 0.15,}}>{item.amount}</Text>
                     </View>
                 </View>
             </View>
@@ -119,11 +160,11 @@ export default class Expense extends Component {
                                     placeholder={'Ex: Apr 27, 2018 → Jul 10, 2018'}
                                     mode={'range'}
                                     onConfirm={text => {
-                                        this.setState({invoiceDate: text});
-                                        console.log('invoiceDate: ', text);
+                                        this.setState({dateRange: text});
+                                        console.log('dateRange: ', text);
                                     }}
                                     ref={ref => (this.picker = ref)}
-                                    // value={this.state.invoiceDate}
+                                    // value={this.state.dateRange}
                                     // selectedValue={'dscssdcsdfdjsbd'}
                                 />
                             </View>
@@ -138,7 +179,7 @@ export default class Expense extends Component {
                         </View>
 
                         <Button
-                            onPress={() => this.addExpense}
+                            onPress={() => this.fiter()}
                             title='Filter'
                             buttonStyle={{backgroundColor: PrimaryBlue, width: 96, height: 36, borderRadius: 8, marginTop: 8}}
                             titleStyle={{color: 'white', fontSize: 14, fontWeight: 'bold',}}
@@ -147,8 +188,9 @@ export default class Expense extends Component {
                         <View style={styles.flatListContainer}>
                             <ScrollView>
                                 <FlatList
-                                    data={[{'id': 1, 'datetime': '12/09/2022 12:30PM', 'category': 'asdas', 'description': 'fsd'}, {'id': 2, 'datetime': '12/09/2022 12:30PM', 'category': 'asdas', 'description': 'fsd'}]}
+                                    data={this.props.expenseList}
                                     // data={this.state.filteredInvoices}
+                                    ListHeaderComponent={() => this.ListHeader()}
                                     renderItem={({item, index}) => this.renderItem(item, index)}
                                     keyExtractor={item => item.id.toString()}
                                     ItemSeparatorComponent={() => (
@@ -184,23 +226,36 @@ export default class Expense extends Component {
                         
                         <View style={[Styles.DefaultBorderStyle, { borderRadius: 12, margin: 8, marginTop: 50, padding: 12, borderColor: '#2383F7', borderWidth: 1.5,}]}>
                             <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : null}>
-                                <View style={{flexDirection:'row', paddingVertical: 4, marginTop: 8,}}>
+                                <View style={{flexDirection:'row', paddingVertical: 8, marginTop: 8,}}>
                                     <Text style={{fontSize: 16}}>Add Expense</Text>
+                                </View>
+                                <View style={{flexDirection:'row'}}>
+                                    <View style={{flex: 1, paddingVertical: 4, borderColor: 'rgba(0,0,0,0.2)', borderWidth: 1, borderRadius: 8,alignSelf:"center"}}>
+                                        <Picker style={{ height: 24}} onValueChange={category_id => {this.setState({category_id: category_id})}}>
+                                            <Picker.Item label="Select Category" value='' />
+                                            {
+                                                this.props.categoryList.map(element => {
+                                                    console.log(element);
+                                                    return (<Picker.Item label={element.title} value={element.id} />)
+                                                })
+                                            }
+                                        </Picker>
+                                    </View>
                                 </View>
                                 <TextInput 
                                     style={[Styles.DefaultTextInput, {height: 80}]}
                                     placeholder="Short description"
-                                    onChangeText={text => this.setState({password: text})}
+                                    onChangeText={text => this.setState({description: text})}
                                     multiline
                                 />
                                 <TextInput 
                                     style={Styles.DefaultTextInput}
                                     placeholder="Amount"
-                                    onChangeText={text => this.setState({password: text})}
+                                    onChangeText={text => this.setState({amount: text})}
                                     keyboardType="numeric"
                                 />
                                 <Button
-                                    onPress={() => this.addExpense}
+                                    onPress={() => this.addExpense()}
                                     title='Add Expense'
                                     buttonStyle={{backgroundColor: PrimaryBlue, width: 112, height: 36, borderRadius: 8}}
                                     titleStyle={{color: 'white', fontSize: 14, fontWeight: 'bold',}}
@@ -213,6 +268,18 @@ export default class Expense extends Component {
         )
     }
 }
+
+
+const mapStateToProps =  state => {console.log(state);return({
+    expenseList: state.entities.expenses.expenseList,
+    categoryList: state.entities.expenses.categoryList,
+})}
+const mapDispatchToProps =  dispatch => ({
+    expenseAddRequest: (params) => dispatch(expenseAddRequest(params)),
+    
+});
+export default connect(mapStateToProps, mapDispatchToProps)(Expense)
+
 
 const styles = StyleSheet.create({
   row: {
