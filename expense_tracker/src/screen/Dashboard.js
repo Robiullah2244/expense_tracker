@@ -3,7 +3,8 @@ import { Text, View } from 'react-native'
 import Header from 'expense_tracker/src/component/Header';
 import Background from 'expense_tracker/src/component/Background';
 
-export default class Dashboard extends Component {
+import { connect } from 'react-redux';
+class Dashboard extends Component {
     render() {
         return (
             <>
@@ -14,7 +15,7 @@ export default class Dashboard extends Component {
                             Total Expenses
                         </Text>
                         <Text style={{fontSize: 26, fontWeight: 'bold'}}>
-                            123456
+                            {this.props.expenseList.reduce(function(acc, item) { return acc + Number(item.amount); }, 0)}
                         </Text>
                     </View>
                 </Background>
@@ -22,3 +23,11 @@ export default class Dashboard extends Component {
         )
     }
 }
+
+const mapStateToProps =  state => {console.log(state);return({
+    expenseList: state.entities.expenses.expenseList,
+})}
+const mapDispatchToProps =  dispatch => ({
+});
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard)
+

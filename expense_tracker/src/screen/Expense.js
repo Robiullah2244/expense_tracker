@@ -200,6 +200,8 @@ class Expense extends Component {
                             titleStyle={{color: 'white', fontSize: 14, fontWeight: 'bold',}}
                         />
 
+                        <Text style={{alignSelf: 'flex-end', marginTop: 8, fontSize: 18}}>Total: {this.props.filteredExpenseList.reduce(function(acc, item) { return acc + Number(item.amount); }, 0)}</Text>
+                            
                         <View style={styles.flatListContainer}>
                             <ScrollView>
                                 <FlatList
